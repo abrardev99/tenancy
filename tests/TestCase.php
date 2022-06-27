@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-//sss
+
 namespace Stancl\Tenancy\Tests;
 
 use Illuminate\Support\Facades\Redis;
