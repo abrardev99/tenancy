@@ -51,7 +51,7 @@ jobs:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      sqlsrv:
+      mssql:
         image: mcr.microsoft.com/mssql/server:2019-latest
         env:
           ACCEPT_EULA: Y
