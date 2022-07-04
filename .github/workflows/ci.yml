@@ -73,7 +73,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: mssql
-        run: pecl install sqlsrv pdo_sqlsrv
+        run: |
+        curl https://packages.microsoft.com/keys/microsoft.asc apt-key add 
+        curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
+        ACCEPT_EULA=Y apt-get install -y unixodbc-dev msodbcsql17
+        pecl install sqlsrv pdo_sqlsrv
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
