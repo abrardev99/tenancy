@@ -9,7 +9,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     container: shivammathur/node:latest
-    run: pecl install sqlsrv pdo_sqlsrv
 
     strategy:
       matrix:
