@@ -51,7 +51,7 @@ jobs:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      mssql:
+      sqlsrv:
         image: mcr.microsoft.com/mssql/server:2019-latest
         ports:
           - 1433:1433
@@ -86,6 +86,7 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
+      - run: docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P P@ssword -Q "create database [test]"
 
       - name: Install Composer dependencies
         run: |
