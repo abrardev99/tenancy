@@ -51,6 +51,17 @@ jobs:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
+      sqlsrv:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: P@ssword
+        options: >-
+          --name sqlsrv
+          --health-cmd "echo quit | /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -l 1 -U sa -P P@ssword"
+
       redis:
         image: redis:alpine
         ports:
@@ -61,13 +72,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run the action
-        uses: potatoqualitee/mssqlsuite@v1.5.1
-        with:
-          install: sqlengine, sqlpackage
-          sa-password: P@ssword
-      - name: Run sqlclient
-        run: sqlcmd -S localhost -U sa -P dbatools.I0 -d tempdb -Q "SELECT @@version;"
+      - run: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=P@ssword" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
