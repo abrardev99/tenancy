@@ -9,6 +9,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     container: shivammathur/node:latest
+    run: pecl install sqlsrv pdo_sqlsrv
 
     strategy:
       matrix:
@@ -71,6 +72,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: mssql
+        run: pecl install sqlsrv pdo_sqlsrv
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
