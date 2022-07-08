@@ -1,6 +1,6 @@
-ARG PHP_VERSION=7.4
-ARG PHP_TARGET=php:${PHP_VERSION}-cli
+ARG PHP_VERSION=8.1
 
+# setupphp/node install PHP 5.6 to PHP 8.1
 FROM setupphp/node:latest
 
 WORKDIR /var/www/html
@@ -15,22 +15,24 @@ LABEL org.opencontainers.image.source=https://github.com/stancl/tenancy \
 ENV TZ=Europe/London
 ENV LANG=en_GB.UTF-8
 
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+# install MYSSQL ODBC Driver
+RUN apt-get update \
+    && apt-get install -y gnupg2 \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update \
-    && apt-get -y --no-install-recommends install msodbcsql17 unixodbc-dev \
-    && pecl install sqlsrv \
-    && pecl install pdo_sqlsrv \
-    && echo "extension=pdo_sqlsrv.so" >> `php --ini | grep "Scan for additional .ini files" | sed -e "s|.*:\s*||"`/30-pdo_sqlsrv.ini \
-    && echo "extension=sqlsrv.so" >> `php --ini | grep "Scan for additional .ini files" | sed -e "s|.*:\s*||"`/30-sqlsrv.ini \
-    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+    && ACCEPT_EULA=Y apt-get install -y unixodbc-dev msodbcsql17
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libhiredis0.14 libjemalloc2 liblua5.1-0 lua-bitop lua-cjson redis redis-server redis-tools
 
 RUN apt-get update \
-    && pecl install redis \
-    && echo extension='"redis.so"' >> /etc/php/8.1/cli/php.ini
+    && pecl install redis-5.3.7 sqlsrv pdo_sqlsrv \
+    && printf "; priority=10\nextension=redis.so\n" > /etc/php/8.1/mods-available/redis.ini \
+    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.1/mods-available/sqlsrv.ini \
+    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.1/mods-available/pdo_sqlsrv.ini \
+    && phpenmod -v 8.1 redis sqlsrv pdo_sqlsrv
+
 # set the system timezone
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
