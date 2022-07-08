@@ -1,7 +1,7 @@
 ARG PHP_VERSION=8.1
 
-# setupphp/node install PHP 5.6 to PHP 8.1
-FROM setupphp/node:latest
+# add amd64 platform to support Mac M1
+FROM --platform=linux/amd64 shivammathur/node:latest-amd64
 
 WORKDIR /var/www/html
 
