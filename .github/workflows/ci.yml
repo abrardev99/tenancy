@@ -72,6 +72,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        
+      - name: Start docker containers
+        run: PHP_VERSION=${{ matrix.php }} docker-compose up -d
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
