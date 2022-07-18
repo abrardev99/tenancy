@@ -20,17 +20,15 @@ RUN apt-get update \
     && apt-get install -y gnupg2 \
     && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
     && ACCEPT_EULA=Y apt-get install -y unixodbc-dev msodbcsql17
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libhiredis0.14 libjemalloc2 liblua5.1-0 lua-bitop lua-cjson redis redis-server redis-tools
 
-RUN apt-get update \
-    && pecl install redis-5.3.7 sqlsrv pdo_sqlsrv \
-    && printf "; priority=10\nextension=redis.so\n" > /etc/php/8.1/mods-available/redis.ini \
-    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.1/mods-available/sqlsrv.ini \
-    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.1/mods-available/pdo_sqlsrv.ini \
+RUN pecl install redis-5.3.7 sqlsrv pdo_sqlsrv \
+    && printf "; priority=10\nextension=redis.so\n" > /etc/php/mods-available/redis.ini \
+    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/mods-available/sqlsrv.ini \
+    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/mods-available/pdo_sqlsrv.ini \
     && phpenmod -v 8.1 redis sqlsrv pdo_sqlsrv
 
 # set the system timezone
