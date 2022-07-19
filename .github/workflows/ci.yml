@@ -54,7 +54,7 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
       redis:
-        image: redis:alpine
+        image: redis
         ports:
           - 6379/tcp
         options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -74,8 +74,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install redis
-        run: sudo apt-get install -y redis redis-server redis-tools
       - name: Verify that redis is up
         run: redis-cli ping
 
