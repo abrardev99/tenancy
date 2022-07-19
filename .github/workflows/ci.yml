@@ -74,14 +74,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Verify that redis is up
-        run: redis-cli ping
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, sqlsrv, pdo_sqlsrv, redis, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, sqlsrv, pdo_sqlsrv, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: pcov
       - run: docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P P@ssword -Q "create database [main]"
 
