@@ -100,7 +100,6 @@ jobs:
       - name: Run tests
         run: ./vendor/bin/phpunit
         env:
-          DB_PORT: 3306
           DB_PASSWORD: password
           DB_USERNAME: root
           DB_DATABASE: main
