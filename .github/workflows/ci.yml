@@ -8,7 +8,7 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    container: abrardev/tenancy:latest
+#    container: abrardev/tenancy:latest
 
     strategy:
       matrix:
