@@ -74,6 +74,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install redis
+        run: sudo apt-get install -y redis-tools redis-server
+      - name: Verify that redis is up
+        run: redis-cli ping
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
