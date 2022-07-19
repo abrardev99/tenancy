@@ -8,7 +8,7 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-#    container: abrardev/tenancy:latest
+    container: abrardev/tenancy:latest
 
     strategy:
       matrix:
@@ -73,16 +73,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Setup redis
-        uses: supercharge/redis-github-action@1.2.0
-        with:
-            redis-version: 6
-
-      - name: Install redis cli # so we can test the server
-        run: sudo apt-get install -y redis-tools
-      - name: Verify that redis is up
-        run: redis-cli ping
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
