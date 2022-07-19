@@ -27,9 +27,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libhiredis0.14 libjemalloc2 liblua5.1-0 lua-bitop lua-cjson redis redis-server redis-tools
 
 RUN pecl install redis-5.3.7 sqlsrv pdo_sqlsrv \
-#    && printf ";nextension=redis.so\n" > /etc/php/mods-available/redis.ini \
-    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/mods-available/sqlsrv.ini \
-    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/mods-available/pdo_sqlsrv.ini \
+    && printf "; priority=20\nextension=redis.so\n" > /etc/php/8.1/mods-available/redis.ini \
+    && printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.1/mods-available/sqlsrv.ini \
+    && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.1/mods-available/pdo_sqlsrv.ini \
     && phpenmod -v 8.1 redis sqlsrv pdo_sqlsrv
 
 # set the system timezone
