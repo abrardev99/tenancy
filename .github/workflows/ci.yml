@@ -79,7 +79,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, sqlsrv, pdo_sqlsrv, redis, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: pcov
-      - run: docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P P@ssword -Q "create database [main]"
+#      - run: docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P P@ssword -Q "create database [main]"
 
       - name: Get composer cache directory
         id: composer-cache
