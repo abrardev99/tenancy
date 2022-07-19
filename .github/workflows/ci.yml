@@ -72,8 +72,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Docker
-        run: docker built .
+      runs:
+        using: 'docker'
+        image: 'Dockerfile'
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
