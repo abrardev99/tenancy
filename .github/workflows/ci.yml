@@ -58,17 +58,6 @@ jobs:
           - 6379/tcp
         options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      sqlsrv:
-        image: mcr.microsoft.com/mssql/server:2019-latest
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: P@ssword
-        options: >-
-          --name sqlsrv
-          --health-cmd "echo quit | /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -l 1 -U sa -P P@ssword"
-        ports:
-          - 1433
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
