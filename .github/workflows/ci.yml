@@ -8,12 +8,14 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    container: abrardev/tenancy:latest
+    # container: abrardev/tenancy:latest
+    container: shivammathur/node:latest
+
     strategy:
       matrix:
-#        php: ['7.4', '8.0', '8.1']
+#        php: ['7.4', '8.0', '8.1'] todo1 uncomment
         php: ['8.1']
-#        laravel: ['^6.0', '^8.0', '^9.0']
+#        laravel: ['^6.0', '^8.0', '^9.0'] todo1 uncomment
         laravel: ['^9.0']
         exclude:
           - php: '8.1'
@@ -51,6 +53,17 @@ jobs:
         ports:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      sqlsrv:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: P@ssword
+        options: >-
+          --name sqlsrv
+          --health-cmd "echo quit | /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -l 1 -U sa -P P@ssword"
+        ports:
+          - 1433
 
       redis:
         image: redis
