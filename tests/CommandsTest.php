@@ -94,6 +94,10 @@ class CommandsTest extends TestCase
     /** @test */
     public function migrate_command_loads_schema_state()
     {
+        if (! isVersion8()) {
+            $this->markTestSkipped('DumpCommand only exists since Laravel 8.0 or above');
+        }
+
         $tenant = Tenant::create();
 
         $this->assertFalse(Schema::hasTable('schema_users'));
@@ -114,6 +118,10 @@ class CommandsTest extends TestCase
     /** @test */
     public function dump_command_works()
     {
+        if (! isVersion8()) {
+            $this->markTestSkipped('DumpCommand only exists since Laravel 8.0 or above');
+        }
+
         $tenant = Tenant::create();
         Artisan::call('tenants:migrate');
 
@@ -234,4 +242,9 @@ class CommandsTest extends TestCase
             ->expectsOutput('Tenant: ' . $tenantId1)
             ->expectsOutput('Tenant: ' . $tenantId2);
     }
+}
+
+function isVersion8(): bool
+{
+    return version_compare(app()->version(), '8.0', '>=');
 }
