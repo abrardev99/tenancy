@@ -8,8 +8,8 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    # container: abrardev/tenancy:latest
-    container: shivammathur/node:latest
+    container: abrardev/tenancy:latest
+#    container: shivammathur/node:latest
 
     strategy:
       matrix:
@@ -63,7 +63,7 @@ jobs:
           --name sqlsrv
           --health-cmd "echo quit | /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -l 1 -U sa -P P@ssword"
         ports:
-          - 1433
+          - 1401
 
       redis:
         image: redis
@@ -74,11 +74,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Install a SQL Server suite of tools
-        uses: potatoqualitee/mssqlsuite@v1.5.1
-        with:
-          install: sqlengine, sqlclient, sqlpackage, localdb
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
