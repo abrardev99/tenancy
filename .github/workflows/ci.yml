@@ -54,16 +54,13 @@ jobs:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      sqlsrv:
+      mssql:
         image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433/tcp
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: P@ssword
-        options: >-
-          --name sqlsrv
-          --health-cmd "echo quit | /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -l 1 -U sa -P P@ssword"
-        ports:
-          - 1433
 
       redis:
         image: redis
@@ -108,7 +105,9 @@ jobs:
           TENANCY_TEST_MYSQL_HOST: mysql
           TENANCY_TEST_PGSQL_HOST: postgres
           TENANCY_TEST_REDIS_HOST: redis
-          TENANCY_TEST_MSSQL_HOST: sqlsrv
+          TENANCY_TEST_SQLSRV_HOST: mssql
+          TENANCY_TEST_SQLSRV_USERNAME: sa
+          TENANCY_TEST_SQLSRV_PASSWORD: P@ssword
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
