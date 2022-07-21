@@ -74,7 +74,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, sqlsrv, pdo_sqlsrv, redis, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
-          coverage: pcov
+#          coverage: pcov
 
       - name: Get composer cache directory
         id: composer-cache
@@ -103,7 +103,7 @@ jobs:
           TENANCY_TEST_REDIS_HOST: redis
           TENANCY_TEST_SQLSRV_HOST: mssql
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          token: 24382d15-84e7-4a55-bea4-c4df96a24a9b
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v2
+#        with:
+#          token: 24382d15-84e7-4a55-bea4-c4df96a24a9b
