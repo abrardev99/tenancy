@@ -8,8 +8,7 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    container: abrardev/tenancy:latest
-#    container: shivammathur/node:latest
+    container: shivammathur/node:latest
 
     strategy:
       matrix:
