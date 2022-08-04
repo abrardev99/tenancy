@@ -17,7 +17,7 @@ trait Debuggable
     protected LogMode $logMode = LogMode::NONE;
     protected array $eventLog = [];
 
-    public function log(LogMode $mode = LogMode::SILENT): Debuggable
+    public function log(LogMode $mode = LogMode::SILENT): static
     {
         $this->eventLog = [];
         $this->logMode = $mode;
@@ -35,33 +35,31 @@ trait Debuggable
         return $this->eventLog;
     }
 
-    public function logEvent(TenancyEvent $event): Debuggable
+    public function logEvent(TenancyEvent $event): static
     {
-        $this->eventLog[] = ['time' => now(), 'event' => get_class($event), 'tenant' => $this->tenant];
+        $this->eventLog[] = ['time' => now(), 'event' => $event::class, 'tenant' => $this->tenant];
 
         return $this;
     }
 
-    public function dump(Closure $dump = null): Debuggable
+    public function dump(Closure $dump = null): static
     {
-        $dump ??= Closure::fromCallable('dd');
+        $dump ??= dd(...);
 
         // Dump the log if we were already logging in silent mode
         // Otherwise start logging in instant mode
-        if ($this->logMode === LogMode::NONE) {
-            $this->log(LogMode::INSTANT);
-        }
-
-        if ($this->logMode === LogMode::SILENT) {
-            $dump($this->eventLog);
-        }
+        match ($this->logMode) {
+            LogMode::NONE => $this->log(LogMode::INSTANT),
+            LogMode::SILENT => $dump($this->eventLog),
+            LogMode::INSTANT => null,
+        };
 
         return $this;
     }
 
     public function dd(Closure $dump = null): void
     {
-        $dump ??= Closure::fromCallable('dd');
+        $dump ??= dd(...);
 
         if ($this->logMode === LogMode::SILENT) {
             $dump($this->eventLog);
