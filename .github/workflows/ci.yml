@@ -71,7 +71,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, sqlsrv, pdo_sqlsrv, redis, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: pcov
 
       - name: Get composer cache directory
