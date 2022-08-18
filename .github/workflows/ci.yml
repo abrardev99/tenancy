@@ -78,8 +78,8 @@ jobs:
 
       - name: Install Composer dependencies
         run: |
-          ./composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
-          ./composer update --prefer-dist --no-interaction
+          composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction
       - name: Run tests
         run: ./vendor/bin/pest
         env:
