@@ -210,3 +210,8 @@ function databaseConnectionSwitchedToDefault()
 
     expect(DB::connection()->getDatabaseName())->toBe($originalDBName);
 }
+
+function isVersion8(): bool
+{
+    return version_compare(app()->version(), '8.0', '>=');
+}
