@@ -56,16 +56,8 @@ class BatchTest extends TestCase
     }
 
 
-    private function getBatchRepositoryConnectionName(): string
+    protected function getBatchRepositoryConnectionName(): string
     {
-        $batchRepository = app(BatchRepository::class);
-
-        $batchRepositoryReflection = new ReflectionClass($batchRepository);
-        $connectionProperty        = $batchRepositoryReflection->getProperty('connection');
-        $connectionProperty->setAccessible(true);
-        $connection = $connectionProperty->getValue($batchRepository);
-
-        return $connection->getName();
+        return app(BatchRepository::class)->getConnection()->getName();
     }
-
 }
