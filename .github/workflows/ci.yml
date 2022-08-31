@@ -8,7 +8,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches: [ master 3.x] # todo@1 remove 3.x before merge
 
 jobs:
   tests:
