@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Stancl\Tenancy\Database\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Stancl\Tenancy\Contracts;
 use Stancl\Tenancy\Contracts\Tenant;
 use Stancl\Tenancy\Database\Concerns;
@@ -26,7 +25,7 @@ class Domain extends Model implements Contracts\Domain
 
     protected $guarded = [];
 
-    public function tenant(): BelongsTo
+    public function tenant()
     {
         return $this->belongsTo(config('tenancy.tenant_model'));
     }

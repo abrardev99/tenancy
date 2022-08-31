@@ -19,7 +19,7 @@ trait BelongsToTenant
         return $this->belongsTo(config('tenancy.tenant_model'), BelongsToTenant::$tenantIdColumn);
     }
 
-    public static function bootBelongsToTenant(): void
+    public static function bootBelongsToTenant()
     {
         static::addGlobalScope(new TenantScope);
 

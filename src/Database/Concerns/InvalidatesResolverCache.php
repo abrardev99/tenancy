@@ -16,7 +16,7 @@ trait InvalidatesResolverCache
         Resolvers\RequestDataTenantResolver::class,
     ];
 
-    public static function bootInvalidatesResolverCache(): void
+    public static function bootInvalidatesResolverCache()
     {
         static::saved(function (Tenant $tenant) {
             foreach (static::$resolvers as $resolver) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Stancl\Tenancy\Events;
 
 use Stancl\Tenancy\Contracts\Syncable;
-use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
 
 class SyncedResourceChangedInForeignDatabase
 {

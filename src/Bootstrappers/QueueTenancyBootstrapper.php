@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Stancl\Tenancy\Bootstrappers;
 
+use Illuminate\Support\Str;
 use Illuminate\Config\Repository;
-use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Queue\QueueManager;
+use Stancl\Tenancy\Contracts\Tenant;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\Events\JobRetryRequested;
-use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Testing\Fakes\QueueFake;
+use Illuminate\Contracts\Foundation\Application;
 use Stancl\Tenancy\Contracts\TenancyBootstrapper;
-use Stancl\Tenancy\Contracts\Tenant;
 
 class QueueTenancyBootstrapper implements TenancyBootstrapper
 {

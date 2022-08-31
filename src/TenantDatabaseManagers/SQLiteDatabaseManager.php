@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Stancl\Tenancy\Database\TenantDatabaseManagers;
+namespace Stancl\Tenancy\TenantDatabaseManagers;
 
-use Stancl\Tenancy\Database\Contracts\TenantDatabaseManager;
-use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
-use Throwable;
+use Stancl\Tenancy\Contracts\TenantDatabaseManager;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
 
 class SQLiteDatabaseManager implements TenantDatabaseManager
 {
@@ -14,7 +13,7 @@ class SQLiteDatabaseManager implements TenantDatabaseManager
     {
         try {
             return file_put_contents(database_path($tenant->database()->getName()), '');
-        } catch (Throwable) {
+        } catch (\Throwable $th) {
             return false;
         }
     }
@@ -23,7 +22,7 @@ class SQLiteDatabaseManager implements TenantDatabaseManager
     {
         try {
             return unlink(database_path($tenant->database()->getName()));
-        } catch (Throwable) {
+        } catch (\Throwable $th) {
             return false;
         }
     }

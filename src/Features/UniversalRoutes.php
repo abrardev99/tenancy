@@ -13,10 +13,9 @@ use Stancl\Tenancy\Tenancy;
 
 class UniversalRoutes implements Feature
 {
-    public static string $middlewareGroup = 'universal';
+    public static $middlewareGroup = 'universal';
 
-    // todo docblock
-    public static array $identificationMiddlewares = [
+    public static $identificationMiddlewares = [
         Middleware\InitializeTenancyByDomain::class,
         Middleware\InitializeTenancyBySubdomain::class,
     ];
@@ -24,15 +23,9 @@ class UniversalRoutes implements Feature
     public function bootstrap(Tenancy $tenancy): void
     {
         foreach (static::$identificationMiddlewares as $middleware) {
-            $originalOnFail = $middleware::$onFail;
-
-            $middleware::$onFail = function ($exception, $request, $next) use ($originalOnFail) {
+            $middleware::$onFail = function ($exception, $request, $next) {
                 if (static::routeHasMiddleware($request->route(), static::$middlewareGroup)) {
                     return $next($request);
-                }
-
-                if ($originalOnFail) {
-                    return $originalOnFail($exception, $request, $next);
                 }
 
                 throw $exception;
@@ -40,7 +33,7 @@ class UniversalRoutes implements Feature
         }
     }
 
-    public static function routeHasMiddleware(Route $route, string $middleware): bool
+    public static function routeHasMiddleware(Route $route, $middleware): bool
     {
         if (in_array($middleware, $route->middleware(), true)) {
             return true;

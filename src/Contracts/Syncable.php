@@ -8,11 +8,11 @@ interface Syncable
 {
     public function getGlobalIdentifierKeyName(): string;
 
-    public function getGlobalIdentifierKey(): string|int;
+    public function getGlobalIdentifierKey();
 
     public function getCentralModelName(): string;
 
     public function getSyncedAttributeNames(): array;
 
-    public function triggerSyncEvent(): void;
+    public function triggerSyncEvent();
 }

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Stancl\Tenancy\Tests\Features;
+
 use Illuminate\Support\Facades\Event;
 use Stancl\Tenancy\Events\TenancyEnded;
 use Stancl\Tenancy\Events\TenancyInitialized;
@@ -9,95 +11,84 @@ use Stancl\Tenancy\Features\TenantConfig;
 use Stancl\Tenancy\Listeners\BootstrapTenancy;
 use Stancl\Tenancy\Listeners\RevertToCentralContext;
 use Stancl\Tenancy\Tests\Etc\Tenant;
+use Stancl\Tenancy\Tests\TestCase;
 
-afterEach(function () {
-    TenantConfig::$storageToConfigMap = [];
-});
+class TenantConfigTest extends TestCase
+{
+    public function tearDown(): void
+    {
+        TenantConfig::$storageToConfigMap = [];
 
-test('nested tenant values are merged', function () {
-    expect(config('whitelabel.theme'))->toBeNull();
-    config([
-        'tenancy.features' => [TenantConfig::class],
-        'tenancy.bootstrappers' => [],
-    ]);
-    Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
-    Event::listen(TenancyEnded::class, RevertToCentralContext::class);
+        parent::tearDown();
+    }
 
-    TenantConfig::$storageToConfigMap =  [
-        'whitelabel.config.theme' => 'whitelabel.theme',
-    ];
+    /** @test */
+    public function config_is_merged_and_removed()
+    {
+        $this->assertSame(null, config('services.paypal'));
+        config([
+            'tenancy.features' => [TenantConfig::class],
+            'tenancy.bootstrappers' => [],
+        ]);
+        Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
+        Event::listen(TenancyEnded::class, RevertToCentralContext::class);
 
-    $tenant = Tenant::create([
-        'whitelabel' => ['config' => ['theme' => 'dark']],
-    ]);
+        TenantConfig::$storageToConfigMap = [
+            'paypal_api_public' => 'services.paypal.public',
+            'paypal_api_private' => 'services.paypal.private',
+        ];
 
-    tenancy()->initialize($tenant);
-    expect(config('whitelabel.theme'))->toBe('dark');
-    tenancy()->end();
-});
+        $tenant = Tenant::create([
+            'paypal_api_public' => 'foo',
+            'paypal_api_private' => 'bar',
+        ]);
 
-test('config is merged and removed', function () {
-    expect(config('services.paypal'))->toBe(null);
-    config([
-        'tenancy.features' => [TenantConfig::class],
-        'tenancy.bootstrappers' => [],
-    ]);
-    Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
-    Event::listen(TenancyEnded::class, RevertToCentralContext::class);
+        tenancy()->initialize($tenant);
+        $this->assertSame(['public' => 'foo', 'private' => 'bar'], config('services.paypal'));
 
-    TenantConfig::$storageToConfigMap = [
-        'paypal_api_public' => 'services.paypal.public',
-        'paypal_api_private' => 'services.paypal.private',
-    ];
+        tenancy()->end();
+        $this->assertSame([
+            'public' => null,
+            'private' => null,
+        ], config('services.paypal'));
+    }
 
-    $tenant = Tenant::create([
-        'paypal_api_public' => 'foo',
-        'paypal_api_private' => 'bar',
-    ]);
+    /** @test */
+    public function the_value_can_be_set_to_multiple_config_keys()
+    {
+        $this->assertSame(null, config('services.paypal'));
+        config([
+            'tenancy.features' => [TenantConfig::class],
+            'tenancy.bootstrappers' => [],
+        ]);
+        Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
+        Event::listen(TenancyEnded::class, RevertToCentralContext::class);
 
-    tenancy()->initialize($tenant);
-    expect(config('services.paypal'))->toBe(['public' => 'foo', 'private' => 'bar']);
+        TenantConfig::$storageToConfigMap = [
+            'paypal_api_public' => [
+                'services.paypal.public1',
+                'services.paypal.public2',
+            ],
+            'paypal_api_private' => 'services.paypal.private',
+        ];
 
-    tenancy()->end();
-    pest()->assertSame([
-        'public' => null,
-        'private' => null,
-    ], config('services.paypal'));
-});
+        $tenant = Tenant::create([
+            'paypal_api_public' => 'foo',
+            'paypal_api_private' => 'bar',
+        ]);
 
-test('the value can be set to multiple config keys', function () {
-    expect(config('services.paypal'))->toBe(null);
-    config([
-        'tenancy.features' => [TenantConfig::class],
-        'tenancy.bootstrappers' => [],
-    ]);
-    Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
-    Event::listen(TenancyEnded::class, RevertToCentralContext::class);
+        tenancy()->initialize($tenant);
+        $this->assertSame([
+            'public1' => 'foo',
+            'public2' => 'foo',
+            'private' => 'bar',
+        ], config('services.paypal'));
 
-    TenantConfig::$storageToConfigMap = [
-        'paypal_api_public' => [
-            'services.paypal.public1',
-            'services.paypal.public2',
-        ],
-        'paypal_api_private' => 'services.paypal.private',
-    ];
-
-    $tenant = Tenant::create([
-        'paypal_api_public' => 'foo',
-        'paypal_api_private' => 'bar',
-    ]);
-
-    tenancy()->initialize($tenant);
-    pest()->assertSame([
-        'public1' => 'foo',
-        'public2' => 'foo',
-        'private' => 'bar',
-    ], config('services.paypal'));
-
-    tenancy()->end();
-    pest()->assertSame([
-        'public1' => null,
-        'public2' => null,
-        'private' => null,
-    ], config('services.paypal'));
-});
+        tenancy()->end();
+        $this->assertSame([
+            'public1' => null,
+            'public2' => null,
+            'private' => null,
+        ], config('services.paypal'));
+    }
+}

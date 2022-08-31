@@ -11,11 +11,14 @@ use Stancl\Tenancy\Contracts\TenantResolver;
 
 abstract class CachedTenantResolver implements TenantResolver
 {
-    public static bool $shouldCache = false; // todo docblocks for these
+    /** @var bool */
+    public static $shouldCache = false;
 
-    public static int $cacheTTL = 3600; // seconds
+    /** @var int */
+    public static $cacheTTL = 3600; // seconds
 
-    public static string|null $cacheStore = null; // default
+    /** @var string|null */
+    public static $cacheStore = null; // default
 
     /** @var Repository */
     protected $cache;
@@ -25,7 +28,7 @@ abstract class CachedTenantResolver implements TenantResolver
         $this->cache = $cache->store(static::$cacheStore);
     }
 
-    public function resolve(mixed ...$args): Tenant
+    public function resolve(...$args): Tenant
     {
         if (! static::$shouldCache) {
             return $this->resolveWithoutCache(...$args);
@@ -58,12 +61,12 @@ abstract class CachedTenantResolver implements TenantResolver
         }
     }
 
-    public function getCacheKey(mixed ...$args): string
+    public function getCacheKey(...$args): string
     {
         return '_tenancy_resolver:' . static::class . ':' . json_encode($args);
     }
 
-    abstract public function resolveWithoutCache(mixed ...$args): Tenant;
+    abstract public function resolveWithoutCache(...$args): Tenant;
 
     public function resolved(Tenant $tenant, ...$args): void
     {
@@ -72,6 +75,7 @@ abstract class CachedTenantResolver implements TenantResolver
     /**
      * Get all the arg combinations for resolve() that can be used to find this tenant.
      *
+     * @param Tenant $tenant
      * @return array[]
      */
     abstract public function getArgsForTenant(Tenant $tenant): array;

@@ -10,7 +10,7 @@ trait BelongsToPrimaryModel
 {
     abstract public function getRelationshipToPrimaryModel(): string;
 
-    public static function bootBelongsToPrimaryModel(): void
+    public static function bootBelongsToPrimaryModel()
     {
         static::addGlobalScope(new ParentModelScope);
     }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Stancl\Tenancy\Database\Concerns;
+namespace Stancl\Tenancy\Concerns;
 
-use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
 
 trait CreatesDatabaseUsers
 {

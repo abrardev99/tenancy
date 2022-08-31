@@ -9,13 +9,16 @@ use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedByRequestDataException;
 
 class RequestDataTenantResolver extends Contracts\CachedTenantResolver
 {
-    public static bool $shouldCache = false;
+    /** @var bool */
+    public static $shouldCache = false;
 
-    public static int $cacheTTL = 3600; // seconds
+    /** @var int */
+    public static $cacheTTL = 3600; // seconds
 
-    public static string|null $cacheStore = null; // default
+    /** @var string|null */
+    public static $cacheStore = null; // default
 
-    public function resolveWithoutCache(mixed ...$args): Tenant
+    public function resolveWithoutCache(...$args): Tenant
     {
         $payload = $args[0];
 

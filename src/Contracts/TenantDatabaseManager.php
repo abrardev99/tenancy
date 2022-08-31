@@ -2,28 +2,46 @@
 
 declare(strict_types=1);
 
-namespace Stancl\Tenancy\Database\Contracts;
+namespace Stancl\Tenancy\Contracts;
 
-use Stancl\Tenancy\Database\Exceptions\NoConnectionSetException;
+use Stancl\Tenancy\Exceptions\NoConnectionSetException;
 
 interface TenantDatabaseManager
 {
-    /** Create a database. */
+    /**
+     * Create a database.
+     */
     public function createDatabase(TenantWithDatabase $tenant): bool;
 
-    /** Delete a database. */
+    /**
+     * Delete a database.
+     */
     public function deleteDatabase(TenantWithDatabase $tenant): bool;
 
-    /** Does a database exist? */
+    /**
+     * Does a database exist.
+     *
+     * @param string $name
+     * @return bool
+     */
     public function databaseExists(string $name): bool;
 
-    /** Construct a DB connection config array. */
+    /**
+     * Make a DB connection config array.
+     *
+     * @param array $baseConfig
+     * @param string $databaseName
+     * @return array
+     */
     public function makeConnectionConfig(array $baseConfig, string $databaseName): array;
 
     /**
      * Set the DB connection that should be used by the tenant database manager.
      *
      * @throws NoConnectionSetException
+     *
+     * @param string $connection
+     * @return void
      */
     public function setConnection(string $connection): void;
 }

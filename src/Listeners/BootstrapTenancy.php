@@ -10,7 +10,7 @@ use Stancl\Tenancy\Events\TenancyInitialized;
 
 class BootstrapTenancy
 {
-    public function handle(TenancyInitialized $event): void
+    public function handle(TenancyInitialized $event)
     {
         event(new BootstrappingTenancy($event->tenancy));
 

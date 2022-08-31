@@ -11,22 +11,31 @@ use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException;
 
 class DomainTenantResolver extends Contracts\CachedTenantResolver
 {
-    /** The model representing the domain that the tenant was identified on. */
-    public static Domain $currentDomain; // todo |null?
+    /**
+     * The model representing the domain that the tenant was identified on.
+     *
+     * @var Domain
+     */
+    public static $currentDomain;
 
-    public static bool $shouldCache = false;
+    /** @var bool */
+    public static $shouldCache = false;
 
-    public static int $cacheTTL = 3600; // seconds
+    /** @var int */
+    public static $cacheTTL = 3600; // seconds
 
-    public static string|null $cacheStore = null; // default
+    /** @var string|null */
+    public static $cacheStore = null; // default
 
-    public function resolveWithoutCache(mixed ...$args): Tenant
+    public function resolveWithoutCache(...$args): Tenant
     {
         $domain = $args[0];
 
         /** @var Tenant|null $tenant */
         $tenant = config('tenancy.tenant_model')::query()
-            ->whereHas('domains', fn (Builder $query) => $query->where('domain', $domain))
+            ->whereHas('domains', function (Builder $query) use ($domain) {
+                $query->where('domain', $domain);
+            })
             ->with('domains')
             ->first();
 

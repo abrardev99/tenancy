@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Stancl\Tenancy\Tests;
+
 use Illuminate\Support\Facades\Event;
 use Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenancyEnded;
@@ -11,42 +13,49 @@ use Stancl\Tenancy\Listeners\BootstrapTenancy;
 use Stancl\Tenancy\Listeners\RevertToCentralContext;
 use Stancl\Tenancy\Tests\Etc\Tenant;
 
-beforeEach(function () {
-    config(['tenancy.bootstrappers' => [
-        CacheTenancyBootstrapper::class,
-    ]]);
+class GlobalCacheTest extends TestCase
+{
+    public function setUp(): void
+    {
+        parent::setUp();
 
-    Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
-    Event::listen(TenancyEnded::class, RevertToCentralContext::class);
-});
+        config(['tenancy.bootstrappers' => [
+            CacheTenancyBootstrapper::class,
+        ]]);
 
-test('global cache manager stores data in global cache', function () {
-    expect(cache('foo'))->toBe(null);
-    GlobalCache::put(['foo' => 'bar'], 1);
-    expect(GlobalCache::get('foo'))->toBe('bar');
+        Event::listen(TenancyInitialized::class, BootstrapTenancy::class);
+        Event::listen(TenancyEnded::class, RevertToCentralContext::class);
+    }
 
-    $tenant1 = Tenant::create();
-    tenancy()->initialize($tenant1);
-    expect(GlobalCache::get('foo'))->toBe('bar');
+    /** @test */
+    public function global_cache_manager_stores_data_in_global_cache()
+    {
+        $this->assertSame(null, cache('foo'));
+        GlobalCache::put(['foo' => 'bar'], 1);
+        $this->assertSame('bar', GlobalCache::get('foo'));
 
-    GlobalCache::put(['abc' => 'xyz'], 1);
-    cache(['def' => 'ghi'], 10);
-    expect(cache('def'))->toBe('ghi');
+        $tenant1 = Tenant::create();
+        tenancy()->initialize($tenant1);
+        $this->assertSame('bar', GlobalCache::get('foo'));
 
-    tenancy()->end();
-    expect(GlobalCache::get('abc'))->toBe('xyz');
-    expect(GlobalCache::get('foo'))->toBe('bar');
-    expect(cache('def'))->toBe(null);
+        GlobalCache::put(['abc' => 'xyz'], 1);
+        cache(['def' => 'ghi'], 10);
+        $this->assertSame('ghi', cache('def'));
 
-    $tenant2 = Tenant::create();
-    tenancy()->initialize($tenant2);
-    expect(GlobalCache::get('abc'))->toBe('xyz');
-    expect(GlobalCache::get('foo'))->toBe('bar');
-    expect(cache('def'))->toBe(null);
-    cache(['def' => 'xxx'], 1);
-    expect(cache('def'))->toBe('xxx');
+        tenancy()->end();
+        $this->assertSame('xyz', GlobalCache::get('abc'));
+        $this->assertSame('bar', GlobalCache::get('foo'));
+        $this->assertSame(null, cache('def'));
 
-    tenancy()->initialize($tenant1);
-    expect(cache('def'))->toBe('ghi');
-});
+        $tenant2 = Tenant::create();
+        tenancy()->initialize($tenant2);
+        $this->assertSame('xyz', GlobalCache::get('abc'));
+        $this->assertSame('bar', GlobalCache::get('foo'));
+        $this->assertSame(null, cache('def'));
+        cache(['def' => 'xxx'], 1);
+        $this->assertSame('xxx', cache('def'));
 
+        tenancy()->initialize($tenant1);
+        $this->assertSame('ghi', cache('def'));
+    }
+}

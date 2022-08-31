@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Stancl\Tenancy\Database\Concerns;
 
-use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
-use Stancl\Tenancy\Database\DatabaseConfig;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
+use Stancl\Tenancy\DatabaseConfig;
 
 trait HasDatabase
 {

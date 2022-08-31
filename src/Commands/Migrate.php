@@ -33,6 +33,8 @@ class Migrate extends MigrateCommand
 
     /**
      * Execute the console command.
+     *
+     * @return mixed
      */
     public function handle()
     {

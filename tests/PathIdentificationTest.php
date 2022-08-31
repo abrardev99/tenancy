@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Stancl\Tenancy\Tests;
+
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Exceptions\RouteIsMissingTenantParameterException;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedByPathException;
@@ -9,117 +11,138 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 use Stancl\Tenancy\Resolvers\PathTenantResolver;
 use Stancl\Tenancy\Tests\Etc\Tenant;
 
-beforeEach(function () {
-    PathTenantResolver::$tenantParameterName = 'tenant';
+class PathIdentificationTest extends TestCase
+{
+    public function setUp(): void
+    {
+        parent::setUp();
 
-    Route::group([
-        'prefix' => '/{tenant}',
-        'middleware' => InitializeTenancyByPath::class,
-    ], function () {
-        Route::get('/foo/{a}/{b}', function ($a, $b) {
-            return "$a + $b";
+        PathTenantResolver::$tenantParameterName = 'tenant';
+
+        Route::group([
+            'prefix' => '/{tenant}',
+            'middleware' => InitializeTenancyByPath::class,
+        ], function () {
+            Route::get('/foo/{a}/{b}', function ($a, $b) {
+                return "$a + $b";
+            });
         });
-    });
-});
+    }
 
-afterEach(function () {
-    // Global state cleanup
-    PathTenantResolver::$tenantParameterName = 'tenant';
-});
+    public function tearDown(): void
+    {
+        parent::tearDown();
 
-test('tenant can be identified by path', function () {
-    Tenant::create([
-        'id' => 'acme',
-    ]);
+        // Global state cleanup
+        PathTenantResolver::$tenantParameterName = 'tenant';
+    }
 
-    expect(tenancy()->initialized)->toBeFalse();
+    /** @test */
+    public function tenant_can_be_identified_by_path()
+    {
+        Tenant::create([
+            'id' => 'acme',
+        ]);
 
-    pest()->get('/acme/foo/abc/xyz');
+        $this->assertFalse(tenancy()->initialized);
 
-    expect(tenancy()->initialized)->toBeTrue();
-    expect(tenant('id'))->toBe('acme');
-});
+        $this->get('/acme/foo/abc/xyz');
 
-test('route actions dont get the tenant id', function () {
-    Tenant::create([
-        'id' => 'acme',
-    ]);
+        $this->assertTrue(tenancy()->initialized);
+        $this->assertSame('acme', tenant('id'));
+    }
 
-    expect(tenancy()->initialized)->toBeFalse();
+    /** @test */
+    public function route_actions_dont_get_the_tenant_id()
+    {
+        Tenant::create([
+            'id' => 'acme',
+        ]);
 
-    pest()
-        ->get('/acme/foo/abc/xyz')
-        ->assertContent('abc + xyz');
+        $this->assertFalse(tenancy()->initialized);
 
-    expect(tenancy()->initialized)->toBeTrue();
-    expect(tenant('id'))->toBe('acme');
-});
+        $this
+            ->get('/acme/foo/abc/xyz')
+            ->assertContent('abc + xyz');
 
-test('exception is thrown when tenant cannot be identified by path', function () {
-    pest()->expectException(TenantCouldNotBeIdentifiedByPathException::class);
+        $this->assertTrue(tenancy()->initialized);
+        $this->assertSame('acme', tenant('id'));
+    }
 
-    $this
-        ->withoutExceptionHandling()
-        ->get('/acme/foo/abc/xyz');
+    /** @test */
+    public function exception_is_thrown_when_tenant_cannot_be_identified_by_path()
+    {
+        $this->expectException(TenantCouldNotBeIdentifiedByPathException::class);
 
-    expect(tenancy()->initialized)->toBeFalse();
-});
+        $this
+            ->withoutExceptionHandling()
+            ->get('/acme/foo/abc/xyz');
 
-test('onfail logic can be customized', function () {
-    InitializeTenancyByPath::$onFail = function () {
-        return 'foo';
-    };
+        $this->assertFalse(tenancy()->initialized);
+    }
 
-    pest()
-        ->get('/acme/foo/abc/xyz')
-        ->assertContent('foo');
-});
+    /** @test */
+    public function onfail_logic_can_be_customized()
+    {
+        InitializeTenancyByPath::$onFail = function () {
+            return 'foo';
+        };
 
-test('an exception is thrown when the routes first parameter is not tenant', function () {
-    Route::group([
-        // 'prefix' => '/{tenant}', -- intentionally commented
-        'middleware' => InitializeTenancyByPath::class,
-    ], function () {
-        Route::get('/bar/{a}/{b}', function ($a, $b) {
-            return "$a + $b";
+        $this
+            ->get('/acme/foo/abc/xyz')
+            ->assertContent('foo');
+    }
+
+    /** @test */
+    public function an_exception_is_thrown_when_the_routes_first_parameter_is_not_tenant()
+    {
+        Route::group([
+            // 'prefix' => '/{tenant}', -- intentionally commented
+            'middleware' => InitializeTenancyByPath::class,
+        ], function () {
+            Route::get('/bar/{a}/{b}', function ($a, $b) {
+                return "$a + $b";
+            });
         });
-    });
 
-    Tenant::create([
-        'id' => 'acme',
-    ]);
+        Tenant::create([
+            'id' => 'acme',
+        ]);
 
-    pest()->expectException(RouteIsMissingTenantParameterException::class);
+        $this->expectException(RouteIsMissingTenantParameterException::class);
 
-    $this
-        ->withoutExceptionHandling()
-        ->get('/bar/foo/bar');
-});
+        $this
+            ->withoutExceptionHandling()
+            ->get('/bar/foo/bar');
+    }
 
-test('tenant parameter name can be customized', function () {
-    PathTenantResolver::$tenantParameterName = 'team';
+    /** @test */
+    public function tenant_parameter_name_can_be_customized()
+    {
+        PathTenantResolver::$tenantParameterName = 'team';
 
-    Route::group([
-        'prefix' => '/{team}',
-        'middleware' => InitializeTenancyByPath::class,
-    ], function () {
-        Route::get('/bar/{a}/{b}', function ($a, $b) {
-            return "$a + $b";
+        Route::group([
+            'prefix' => '/{team}',
+            'middleware' => InitializeTenancyByPath::class,
+        ], function () {
+            Route::get('/bar/{a}/{b}', function ($a, $b) {
+                return "$a + $b";
+            });
         });
-    });
 
-    Tenant::create([
-        'id' => 'acme',
-    ]);
+        Tenant::create([
+            'id' => 'acme',
+        ]);
 
-    pest()
-        ->get('/acme/bar/abc/xyz')
-        ->assertContent('abc + xyz');
+        $this
+            ->get('/acme/bar/abc/xyz')
+            ->assertContent('abc + xyz');
 
-    // Parameter for resolver is changed, so the /{tenant}/foo route will no longer work.
-    pest()->expectException(RouteIsMissingTenantParameterException::class);
+        // Parameter for resolver is changed, so the /{tenant}/foo route will no longer work.
+        $this->expectException(RouteIsMissingTenantParameterException::class);
 
-    $this
-        ->withoutExceptionHandling()
-        ->get('/acme/foo/abc/xyz');
-});
+        $this
+            ->withoutExceptionHandling()
+            ->get('/acme/foo/abc/xyz');
+    }
+}

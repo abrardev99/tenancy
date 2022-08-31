@@ -6,23 +6,30 @@ namespace Stancl\Tenancy\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
-use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
 
 class SeedDatabase implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(
-        protected TenantWithDatabase&Model $tenant,
-    ) {
+    /** @var TenantWithDatabase */
+    protected $tenant;
+
+    public function __construct(TenantWithDatabase $tenant)
+    {
+        $this->tenant = $tenant;
     }
 
-    public function handle(): void
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
     {
         Artisan::call('tenants:seed', [
             '--tenants' => [$this->tenant->getTenantKey()],

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Scope;
 
 class ParentModelScope implements Scope
 {
-    public function apply(Builder $builder, Model $model): void
+    public function apply(Builder $builder, Model $model)
     {
         if (! tenancy()->initialized) {
             return;

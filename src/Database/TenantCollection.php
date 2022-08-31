@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Stancl\Tenancy\Database;
 
-use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Stancl\Tenancy\Contracts\Tenant;
 
@@ -17,7 +16,7 @@ use Stancl\Tenancy\Contracts\Tenant;
  */
 class TenantCollection extends Collection
 {
-    public function runForEach(Closure $callable): self
+    public function runForEach(callable $callable): self
     {
         tenancy()->runForMultiple($this->items, $callable);
 

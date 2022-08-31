@@ -17,7 +17,7 @@ class CreateTenantConnection
         $this->database = $database;
     }
 
-    public function handle(TenantEvent $event): void
+    public function handle(TenantEvent $event)
     {
         $this->database->createTenantConnection($event->tenant);
     }

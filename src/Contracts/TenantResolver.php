@@ -11,5 +11,5 @@ interface TenantResolver
      *
      * @throws TenantCouldNotBeIdentifiedException
      */
-    public function resolve(mixed ...$args): Tenant;
+    public function resolve(...$args): Tenant;
 }

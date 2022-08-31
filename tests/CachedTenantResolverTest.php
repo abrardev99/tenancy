@@ -2,94 +2,111 @@
 
 declare(strict_types=1);
 
+namespace Stancl\Tenancy\Tests;
+
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Resolvers\DomainTenantResolver;
 use Stancl\Tenancy\Tests\Etc\Tenant;
 
-afterEach(function () {
-    DomainTenantResolver::$shouldCache = false;
-});
+class CachedTenantResolverTest extends TestCase
+{
+    public function tearDown(): void
+    {
+        DomainTenantResolver::$shouldCache = false;
 
-test('tenants can be resolved using the cached resolver', function () {
-    $tenant = Tenant::create();
-    $tenant->domains()->create([
-        'domain' => 'acme',
-    ]);
+        parent::tearDown();
+    }
 
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue()->toBeTrue();
-});
+    /** @test */
+    public function tenants_can_be_resolved_using_the_cached_resolver()
+    {
+        $tenant = Tenant::create();
+        $tenant->domains()->create([
+            'domain' => 'acme',
+        ]);
 
-test('the underlying resolver is not touched when using the cached resolver', function () {
-    $tenant = Tenant::create();
-    $tenant->domains()->create([
-        'domain' => 'acme',
-    ]);
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+    }
 
-    DB::enableQueryLog();
+    /** @test */
+    public function the_underlying_resolver_is_not_touched_when_using_the_cached_resolver()
+    {
+        $tenant = Tenant::create();
+        $tenant->domains()->create([
+            'domain' => 'acme',
+        ]);
 
-    DomainTenantResolver::$shouldCache = false;
+        DB::enableQueryLog();
 
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    pest()->assertNotEmpty(DB::getQueryLog()); // not empty
+        DomainTenantResolver::$shouldCache = false;
 
-    DomainTenantResolver::$shouldCache = true;
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertNotEmpty(DB::getQueryLog()); // not empty
 
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    expect(DB::getQueryLog())->toBeEmpty(); // empty
-});
+        DomainTenantResolver::$shouldCache = true;
 
-test('cache is invalidated when the tenant is updated', function () {
-    $tenant = Tenant::create();
-    $tenant->createDomain([
-        'domain' => 'acme',
-    ]);
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertEmpty(DB::getQueryLog()); // empty
+    }
 
-    DB::enableQueryLog();
+    /** @test */
+    public function cache_is_invalidated_when_the_tenant_is_updated()
+    {
+        $tenant = Tenant::create();
+        $tenant->createDomain([
+            'domain' => 'acme',
+        ]);
 
-    DomainTenantResolver::$shouldCache = true;
+        DB::enableQueryLog();
 
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    expect(DB::getQueryLog())->toBeEmpty(); // empty
+        DomainTenantResolver::$shouldCache = true;
 
-    $tenant->update([
-        'foo' => 'bar',
-    ]);
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertEmpty(DB::getQueryLog()); // empty
 
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    pest()->assertNotEmpty(DB::getQueryLog()); // not empty
-});
+        $tenant->update([
+            'foo' => 'bar',
+        ]);
 
-test('cache is invalidated when a tenants domain is changed', function () {
-    $tenant = Tenant::create();
-    $tenant->createDomain([
-        'domain' => 'acme',
-    ]);
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertNotEmpty(DB::getQueryLog()); // not empty
+    }
 
-    DB::enableQueryLog();
+    /** @test */
+    public function cache_is_invalidated_when_a_tenants_domain_is_changed()
+    {
+        $tenant = Tenant::create();
+        $tenant->createDomain([
+            'domain' => 'acme',
+        ]);
 
-    DomainTenantResolver::$shouldCache = true;
+        DB::enableQueryLog();
 
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    expect(DB::getQueryLog())->toBeEmpty(); // empty
+        DomainTenantResolver::$shouldCache = true;
 
-    $tenant->createDomain([
-        'domain' => 'bar',
-    ]);
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertEmpty(DB::getQueryLog()); // empty
 
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('acme')))->toBeTrue();
-    pest()->assertNotEmpty(DB::getQueryLog()); // not empty
+        $tenant->createDomain([
+            'domain' => 'bar',
+        ]);
 
-    DB::flushQueryLog();
-    expect($tenant->is(app(DomainTenantResolver::class)->resolve('bar')))->toBeTrue();
-    pest()->assertNotEmpty(DB::getQueryLog()); // not empty
-});
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('acme')));
+        $this->assertNotEmpty(DB::getQueryLog()); // not empty
+
+        DB::flushQueryLog();
+        $this->assertTrue($tenant->is(app(DomainTenantResolver::class)->resolve('bar')));
+        $this->assertNotEmpty(DB::getQueryLog()); // not empty
+    }
+}

@@ -42,6 +42,8 @@ class Rollback extends RollbackCommand
 
     /**
      * Execute the console command.
+     *
+     * @return mixed
      */
     public function handle()
     {
