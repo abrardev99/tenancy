@@ -89,12 +89,13 @@ class DatabaseManager
     public function ensureTenantCanBeCreated(TenantWithDatabase $tenant): void
     {
         $manager = $tenant->database()->hostManager();
-        //dd( config('database.connections.tenancy_database_manager') );
 
+         // dd(config("database.connections.tenancy_database_manager"));
         if ($manager->databaseExists($database = $tenant->database()->getName())) {
             throw new Exceptions\TenantDatabaseAlreadyExistsException($database);
         }
 
+        //dd('sss');
         if ($manager instanceof Contracts\ManagesDatabaseUsers && $manager->userExists($username = $tenant->database()->getUsername())) {
             throw new Exceptions\TenantDatabaseUserAlreadyExistsException($username);
         }

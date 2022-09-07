@@ -224,34 +224,16 @@ test('tenant database can be created on a foreign server', function () {
     expect($manager->databaseExists($name))->toBeTrue();
 });
 
-test('tenant database can be created on a foreign server by using the connection details from tenant config', function () {
+test('tenant database can be created on template tenant connection', function () {
     config([
         'tenancy.database.managers.mysql' => MySQLDatabaseManager::class,
-        'database.default' => 'mysql',
-        'database.connections.mysql' => [
+        'tenancy.database.template_tenant_connection' => 'mysql2',
+        'database.connections.mysql2' => [
             'driver' => 'mysql',
-            'host' => 'mysql',
+            'host' => 'mysql2',
             'port' => 3306,
             'database' => 'main',
-            'username' => 'user',
-            'password' => 'password',
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
-        ],
-        'database.connections.mysql3' => [
-            'driver' => 'mysql',
-            'host' => 'mysql3',
-            'port' => 3308,
-            'database' => 'main',
-            'username' => 'user',
+            'username' => 'root',
             'password' => 'password',
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
@@ -273,20 +255,65 @@ test('tenant database can be created on a foreign server by using the connection
     $name = 'foo' . Str::random(8);
     $tenant = Tenant::create([
         'tenancy_db_name' => $name,
-        'tenancy_db_host' => 'mysql3',
-        'tenancy_db_port' => '3308',
     ]);
 
     /** @var MySQLDatabaseManager $manager */
-    $manager = $tenant->database()->hostManager();
+    $manager = $tenant->database()->manager();
+
+    // central was default connection so we are making sure
+    // that database did not create on central
+    $manager->setConnection('central');
+    expect($manager->databaseExists($name))->toBeFalse();
+
+    $manager->setConnection('mysql2');
+    expect($manager->databaseExists($name))->toBeTrue();
+});
+
+test('tenant database can be created on a foreign server by using the connection details from tenant config', function () {
+    config([
+        'tenancy.database.managers.mysql' => MySQLDatabaseManager::class,
+        'tenancy.database.template_tenant_connection' => 'mysql',
+        'database.connections.mysql2' => [
+            'driver' => 'mysql',
+            'host' => 'mysql2',
+            'port' => 3306,
+            'database' => 'main',
+            'username' => 'root',
+            'password' => 'password',
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+    ]);
+
+    Event::listen(TenantCreated::class, JobPipeline::make([CreateDatabase::class])->send(function (TenantCreated $event) {
+        return $event->tenant;
+    })->toListener());
+
+    $name = 'foo' . Str::random(8);
+    $tenant = Tenant::create([
+        'tenancy_db_name' => $name,
+        'tenancy_db_host' => 'mysql2',
+    ]);
+
+    /** @var MySQLDatabaseManager $manager */
+    $manager = $tenant->database()->manager();
 
     $manager->setConnection('mysql');
     expect($manager->databaseExists($name))->toBeFalse();
 
-    $manager->setConnection('mysql3');
+    $manager->setConnection('mysql2');
     expect($manager->databaseExists($name))->toBeTrue();
-
 });
+
+test('tenant database can be deleted on a foreign server by using the connection details from tenant config');
 
 test('path used by sqlite manager can be customized', function () {
     pest()->markTestIncomplete();
