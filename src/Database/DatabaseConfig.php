@@ -84,7 +84,6 @@ class DatabaseConfig
         $this->tenant->setInternal('db_name', $this->getName() ?? (static::$databaseNameGenerator)($this->tenant));
 
         if ($this->manager() instanceof Contracts\ManagesDatabaseUsers) {
-            dump('in ');
             $this->tenant->setInternal('db_username', $this->getUsername() ?? (static::$usernameGenerator)($this->tenant));
             $this->tenant->setInternal('db_password', $this->getPassword() ?? (static::$passwordGenerator)($this->tenant));
         }
