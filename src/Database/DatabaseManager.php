@@ -90,7 +90,7 @@ class DatabaseManager
     {
         $manager = $tenant->database()->hostManager();
 
-         // dd(config("database.connections.tenancy_database_manager"));
+        // dd(config("database.connections.tenancy_database_manager"));
         if ($manager->databaseExists($database = $tenant->database()->getName())) {
             throw new Exceptions\TenantDatabaseAlreadyExistsException($database);
         }

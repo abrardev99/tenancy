@@ -169,19 +169,20 @@ class DatabaseConfig
         $templateConnection = config("database.connections.{$template}");
 
         return $this->manager()->makeConnectionConfig(
-            array_merge($templateConnection, $this->tenantConfig()), $templateConnection['database']
+            array_merge($templateConnection, $this->tenantConfig()),
+            $templateConnection['database']
         );
     }
 
     /** Get the host TenantDatabaseManager for this tenant's connection. */
     public function hostManager(): Contracts\TenantDatabaseManager
     {
-        $host =  $this->hostConnection();
+        $host = $this->hostConnection();
         $host['database'] = null;
 
         config(['database.connections.tenancy_database_manager' => $host]);
 
-        $driver = config("database.connections.tenancy_database_manager.driver");
+        $driver = config('database.connections.tenancy_database_manager.driver');
 
         $databaseManagers = config('tenancy.database.managers');
 
