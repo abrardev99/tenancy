@@ -145,8 +145,8 @@ class DatabaseConfig
     public function manager(): Contracts\TenantDatabaseManager
     {
         if (! empty($config = $this->tenantConfig())) {
-            //unset($config['username']);
-            //unset($config['password']);
+            unset($config['username']);
+            unset($config['password']);
             $template = $this->getTemplateConnectionName();
             $templateConnection = config("database.connections.{$template}");
             config(["database.connections.{$template}" => array_replace($templateConnection, $config)]);
