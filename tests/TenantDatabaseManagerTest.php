@@ -313,7 +313,8 @@ test('tenant database can be created on a foreign server by using the connection
     expect($manager->databaseExists($name))->toBeTrue();
 });
 
-test('tenant database can be deleted on a foreign server by using the connection details from tenant config');
+test('tenant database can be deleted on a foreign server by using the connection details from tenant config')
+    ->skip();
 
 test('path used by sqlite manager can be customized', function () {
     pest()->markTestIncomplete();
