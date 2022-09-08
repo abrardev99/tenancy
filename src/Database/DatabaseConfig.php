@@ -158,4 +158,43 @@ class DatabaseConfig
 
         return $databaseManager;
     }
+
+    /**
+     * Tenant host's database connection config. Used for
+     * creating and deleting the tenant database.
+     */
+    public function hostConnection(): array
+    {
+        $template = $this->getTemplateConnectionName();
+        $templateConnection = config("database.connections.{$template}");
+
+        return $this->manager()->makeConnectionConfig(
+            array_merge($templateConnection, $this->tenantConfig()),
+            $templateConnection['database']
+        );
+    }
+
+    /** Get the host TenantDatabaseManager for this tenant's connection. */
+    public function hostManager(): Contracts\TenantDatabaseManager
+    {
+        $host = $this->hostConnection();
+        $host['database'] = null;
+
+        config(['database.connections.tenancy_database_manager' => $host]);
+
+        $driver = config('database.connections.tenancy_database_manager.driver');
+
+        $databaseManagers = config('tenancy.database.managers');
+
+        if (! array_key_exists($driver, $databaseManagers)) {
+            throw new Exceptions\DatabaseManagerNotRegisteredException($driver);
+        }
+
+        /** @var Contracts\TenantDatabaseManager $databaseManager */
+        $databaseManager = app($databaseManagers[$driver]);
+
+        $databaseManager->setConnection('tenancy_database_manager');
+
+        return $databaseManager;
+    }
 }
