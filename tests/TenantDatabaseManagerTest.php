@@ -222,7 +222,7 @@ test('tenant database can be created on a foreign server', function () {
 
     $manager->setConnection('mysql2');
     expect($manager->databaseExists($name))->toBeTrue();
-});
+})->group('server');
 
 test('tenant database can be created on template tenant connection', function () {
     config([
@@ -269,7 +269,7 @@ test('tenant database can be created on template tenant connection', function ()
     expect($manager->databaseExists($name))->toBeTrue();
 });
 
-test('tenant database can be created on a foreign server by using the connection details from tenant config', function () {
+test('tenant database can be created on a foreign server by using the host from tenant config', function () {
     config([
         'tenancy.database.managers.mysql' => MySQLDatabaseManager::class,
         'tenancy.database.template_tenant_connection' => 'mysql',
@@ -306,15 +306,51 @@ test('tenant database can be created on a foreign server by using the connection
     /** @var MySQLDatabaseManager $manager */
     $manager = $tenant->database()->manager();
 
-    $manager->setConnection('mysql');
-    expect($manager->databaseExists($name))->toBeFalse();
-
     $manager->setConnection('mysql2');
     expect($manager->databaseExists($name))->toBeTrue();
-});
+})->group('server');
 
-test('tenant database can be deleted on a foreign server by using the connection details from tenant config')
-    ->skip();
+test('tenant database can be created on a foreign server by using the username and password from tenant config', function () {
+    config([
+        'tenancy.database.managers.mysql' => MySQLDatabaseManager::class,
+        'tenancy.database.template_tenant_connection' => 'mysql',
+        'database.connections.mysql' => [
+            'driver' => 'mysql',
+            'host' => 'mysql',
+            'port' => 3306,
+            'database' => 'main',
+            'username' => '', // provide using tenant config
+            'password' => '', // provide using tenant config
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+    ]);
+
+    Event::listen(TenantCreated::class, JobPipeline::make([CreateDatabase::class])->send(function (TenantCreated $event) {
+        return $event->tenant;
+    })->toListener());
+
+    $name = 'foo' . Str::random(8);
+    $tenant = Tenant::create([
+        'tenancy_db_name' => $name,
+        'tenancy_db_username' => 'root',
+        'tenancy_db_password' => 'password',
+    ]);
+
+    /** @var MySQLDatabaseManager $manager */
+    $manager = $tenant->database()->manager();
+
+    $manager->setConnection('mysql');
+    expect($manager->databaseExists($name))->toBeTrue();
+})->group('server');;
 
 test('path used by sqlite manager can be customized', function () {
     pest()->markTestIncomplete();
