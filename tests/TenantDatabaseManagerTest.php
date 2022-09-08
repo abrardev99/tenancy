@@ -225,6 +225,10 @@ test('tenant database can be created on a foreign server', function () {
     expect($manager->databaseExists($name))->toBeTrue();
 })->group('server');
 
+test('tenant database can be deleted on a foreign server', function () {
+    // merge this in above test
+})->skip();
+
 test('tenant database can be created on template tenant connection', function () {
     config([
         'tenancy.database.managers.mysql' => MySQLDatabaseManager::class,
@@ -309,7 +313,7 @@ test('tenant database can be created on a foreign server by using the host from 
 
     $manager->setConnection('mysql2');
     expect($manager->databaseExists($name))->toBeTrue();
-})->group('server');
+});
 
 test('tenant database can be created on a foreign server by using the username and password from tenant config', function () {
     config([
