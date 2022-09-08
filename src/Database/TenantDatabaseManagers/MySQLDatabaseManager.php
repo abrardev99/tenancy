@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Stancl\Tenancy\Database\TenantDatabaseManagers;
 
+use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
 
 class MySQLDatabaseManager extends TenantDatabaseManager

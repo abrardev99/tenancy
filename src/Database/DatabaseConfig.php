@@ -84,6 +84,7 @@ class DatabaseConfig
         $this->tenant->setInternal('db_name', $this->getName() ?? (static::$databaseNameGenerator)($this->tenant));
 
         if ($this->manager() instanceof Contracts\ManagesDatabaseUsers) {
+            dump('in ');
             $this->tenant->setInternal('db_username', $this->getUsername() ?? (static::$usernameGenerator)($this->tenant));
             $this->tenant->setInternal('db_password', $this->getPassword() ?? (static::$passwordGenerator)($this->tenant));
         }
@@ -143,6 +144,14 @@ class DatabaseConfig
     /** Get the TenantDatabaseManager for this tenant's connection. */
     public function manager(): Contracts\TenantDatabaseManager
     {
+        if (! empty($config = $this->tenantConfig())) {
+             //unset($config['username']);
+             //unset($config['password']);
+            $template = $this->getTemplateConnectionName();
+            $templateConnection = config("database.connections.{$template}");
+            config(["database.connections.{$template}" => array_replace($templateConnection, $config)]);
+        }
+
         $driver = config("database.connections.{$this->getTemplateConnectionName()}.driver");
 
         $databaseManagers = config('tenancy.database.managers');
