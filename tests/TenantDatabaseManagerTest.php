@@ -101,20 +101,22 @@ test('the tenant connection is fully removed', function () {
 
     $tenant = Tenant::create();
 
-    expect(array_keys(app('db')->getConnections()))->toBe(['central']);
+    // Connections array can contain other connections built runtime like 'tenant_host_connection'
+    // So check if tenant connection does not exist in connections
+    expect(array_keys(app('db')->getConnections()))->not()->toContain('tenant');
     pest()->assertArrayNotHasKey('tenant', config('database.connections'));
 
     tenancy()->initialize($tenant);
 
     createUsersTable();
 
-    expect(array_keys(app('db')->getConnections()))->toBe(['central', 'tenant']);
+    expect(array_keys(app('db')->getConnections()))->toContain('central', 'tenant');
     pest()->assertArrayHasKey('tenant', config('database.connections'));
 
     tenancy()->end();
 
-    expect(array_keys(app('db')->getConnections()))->toBe(['central']);
-    expect(config('database.connections.tenant'))->toBeNull();
+    expect(array_keys(app('db')->getConnections()))->not()->toContain('tenant')
+        ->and(config('database.connections.tenant'))->toBeNull();
 });
 
 test('db name is prefixed with db path when sqlite is used', function () {
@@ -350,9 +352,8 @@ test('tenant database can be created on a foreign server by using the username a
     ]);
 
     /** @var MySQLDatabaseManager $manager */
-    $manager = $tenant->database()->manager();
+    $manager = $tenant->database()->hostManager();
 
-    $manager->setConnection('mysql');
     expect($manager->databaseExists($name))->toBeTrue();
 })->group('server');;
 

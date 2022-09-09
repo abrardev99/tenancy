@@ -48,6 +48,11 @@ return [
         'template_tenant_connection' => null,
 
         /**
+         * Tenant host connection name will be created on runtime for creating, deleting databases
+         */
+        'tenant_host_connection_name' => 'tenant_host_connection',
+
+        /**
          * Tenant database names are created like this:
          * prefix + tenant_id + suffix.
          */

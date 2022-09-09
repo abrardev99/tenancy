@@ -61,6 +61,11 @@ class DatabaseConfig
         static::$passwordGenerator = $passwordGenerator;
     }
 
+    public function getTenantHostConnectionName(): ?string
+    {
+        return config('tenancy.database.tenant_host_connection_name');
+    }
+
     public function getName(): ?string
     {
         return $this->tenant->getInternal('db_name') ?? (static::$databaseNameGenerator)($this->tenant);
@@ -119,19 +124,21 @@ class DatabaseConfig
      */
     public function setHostConnection(): void
     {
-        if ($this->manager() instanceof Contracts\ManagesDatabaseUsers) {
-            // Tenant got username and password which we don't need at this stage
-
-            return;
-        }
-
-        if (empty($this->tenantConfig())) {
-            return;
-        }
-
+        $config = $this->tenantConfig();
         $template = $this->getTemplateConnectionName();
         $templateConnection = config("database.connections.{$template}");
-        config(["database.connections.{$template}" => array_replace($templateConnection, $this->tenantConfig())]);
+
+        if ($this->manager() instanceof Contracts\ManagesDatabaseUsers) {
+            unset($config['username']);
+            unset($config['password']);
+        }
+
+        // Improve function
+        if (empty($config)) {
+            $config = $templateConnection;
+        }
+
+        config(["database.connections.{$this->getTenantHostConnectionName()}" => array_replace($templateConnection, $config)]);
     }
 
     /**
@@ -183,8 +190,7 @@ class DatabaseConfig
     {
         $this->setHostConnection();
 
-        $driver = config("database.connections.{$this->getTemplateConnectionName()}.driver");
-
+        $driver = config("database.connections.{$this->getTenantHostConnectionName()}.driver");
         $databaseManagers = config('tenancy.database.managers');
 
         if (! array_key_exists($driver, $databaseManagers)) {
@@ -194,7 +200,7 @@ class DatabaseConfig
         /** @var Contracts\TenantDatabaseManager $databaseManager */
         $databaseManager = app($databaseManagers[$driver]);
 
-        $databaseManager->setConnection($this->getTemplateConnectionName());
+        $databaseManager->setConnection($this->getTenantHostConnectionName());
 
         return $databaseManager;
     }
