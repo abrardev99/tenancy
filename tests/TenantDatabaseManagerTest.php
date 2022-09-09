@@ -182,7 +182,7 @@ test('a tenants database cannot be created when the database already exists', fu
     ]);
 });
 
-test('tenant database can be created on a foreign server', function () {
+test('tenant database can be created and deleted on a foreign server', function () {
     config([
         'tenancy.database.managers.mysql' => PermissionControlledMySQLDatabaseManager::class,
         'database.connections.mysql2' => [
@@ -223,11 +223,10 @@ test('tenant database can be created on a foreign server', function () {
 
     $manager->setConnection('mysql2');
     expect($manager->databaseExists($name))->toBeTrue();
-})->group('server');
 
-test('tenant database can be deleted on a foreign server', function () {
-    // merge this in above test
-})->skip();
+    $manager->deleteDatabase($tenant);
+    expect($manager->databaseExists($name))->toBeFalse();
+})->group('server');
 
 test('tenant database can be created on template tenant connection', function () {
     config([

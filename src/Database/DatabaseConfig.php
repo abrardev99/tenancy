@@ -115,6 +115,26 @@ class DatabaseConfig
     }
 
     /**
+     * todo write docblock.
+     */
+    public function setHostConnection(): void
+    {
+        if ($this->manager() instanceof Contracts\ManagesDatabaseUsers) {
+            // Tenant got username and password which we don't need at this stage
+
+            return;
+        }
+
+        if (empty($this->tenantConfig())) {
+            return;
+        }
+
+        $template = $this->getTemplateConnectionName();
+        $templateConnection = config("database.connections.{$template}");
+        config(["database.connections.{$template}" => array_replace($templateConnection, $this->tenantConfig())]);
+    }
+
+    /**
      * Additional config for the database connection, specific to this tenant.
      */
     public function tenantConfig(): array
@@ -161,15 +181,7 @@ class DatabaseConfig
 
     public function hostManager(): Contracts\TenantDatabaseManager
     {
-        if (! $this->manager() instanceof Contracts\ManagesDatabaseUsers) {
-            if (! empty($config = $this->tenantConfig())) {
-                // unset($config['username']);
-                // unset($config['password']);
-                $template = $this->getTemplateConnectionName();
-                $templateConnection = config("database.connections.{$template}");
-                config(["database.connections.{$template}" => array_replace($templateConnection, $config)]);
-            }
-        }
+        $this->setHostConnection();
 
         $driver = config("database.connections.{$this->getTemplateConnectionName()}.driver");
 
