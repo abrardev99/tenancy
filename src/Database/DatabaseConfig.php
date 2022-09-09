@@ -135,7 +135,9 @@ class DatabaseConfig
 
         // Improve function
         if (empty($config)) {
-            $config = $templateConnection;
+            config(["database.connections.{$this->getTenantHostConnectionName()}" => $templateConnection]);
+
+            return;
         }
 
         config(["database.connections.{$this->getTenantHostConnectionName()}" => array_replace($templateConnection, $config)]);
@@ -190,6 +192,10 @@ class DatabaseConfig
     {
         $this->setHostConnection();
 
+        //dump(config("database.connections.{$this->getTemplateConnectionName()}") === config("database.connections.{$this->getTenantHostConnectionName()}"));
+//        dump([$this->getTemplateConnectionName() => config("database.connections.{$this->getTemplateConnectionName()}")]);
+//         dump([$this->getTenantHostConnectionName() => config("database.connections.{$this->getTenantHostConnectionName()}")]);
+//        $driver = config("database.connections.{$this->getTemplateConnectionName()}.driver");
         $driver = config("database.connections.{$this->getTenantHostConnectionName()}.driver");
         $databaseManagers = config('tenancy.database.managers');
 
@@ -200,6 +206,7 @@ class DatabaseConfig
         /** @var Contracts\TenantDatabaseManager $databaseManager */
         $databaseManager = app($databaseManagers[$driver]);
 
+//        $databaseManager->setConnection($this->getTemplateConnectionName());
         $databaseManager->setConnection($this->getTenantHostConnectionName());
 
         return $databaseManager;
