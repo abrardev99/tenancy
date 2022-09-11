@@ -61,6 +61,11 @@ class DatabaseConfig
         static::$passwordGenerator = $passwordGenerator;
     }
 
+    public function getTenantHostConnectionName(): ?string
+    {
+        return config('tenancy.database.tenant_host_connection_name');
+    }
+
     public function getName(): ?string
     {
         return $this->tenant->getInternal('db_name') ?? (static::$databaseNameGenerator)($this->tenant);
@@ -115,6 +120,27 @@ class DatabaseConfig
     }
 
     /**
+     * todo write docblock.
+     */
+    public function setHostConnection(): void
+    {
+        $config = $this->tenantConfig();
+        $template = $this->getTemplateConnectionName();
+        $templateConnection = config("database.connections.{$template}");
+
+        if ($this->manager() instanceof Contracts\ManagesDatabaseUsers) {
+            unset($config['username']);
+            unset($config['password']);
+        }
+
+        if (empty($config)) {
+            $config = $templateConnection;
+        }
+
+        config(["database.connections.{$this->getTemplateConnectionName()}" => array_replace($templateConnection, $config)]);
+    }
+
+    /**
      * Additional config for the database connection, specific to this tenant.
      */
     public function tenantConfig(): array
@@ -145,6 +171,25 @@ class DatabaseConfig
     {
         $driver = config("database.connections.{$this->getTemplateConnectionName()}.driver");
 
+        $databaseManagers = config('tenancy.database.managers');
+
+        if (! array_key_exists($driver, $databaseManagers)) {
+            throw new Exceptions\DatabaseManagerNotRegisteredException($driver);
+        }
+
+        /** @var Contracts\TenantDatabaseManager $databaseManager */
+        $databaseManager = app($databaseManagers[$driver]);
+
+        $databaseManager->setConnection($this->getTemplateConnectionName());
+
+        return $databaseManager;
+    }
+
+    public function hostManager(): Contracts\TenantDatabaseManager
+    {
+        $this->setHostConnection();
+
+        $driver = config("database.connections.{$this->getTemplateConnectionName()}.driver");
         $databaseManagers = config('tenancy.database.managers');
 
         if (! array_key_exists($driver, $databaseManagers)) {
