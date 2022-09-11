@@ -20,9 +20,7 @@ class PostgreSQLDatabaseManager extends TenantDatabaseManager
 
     public function databaseExists(string $name): bool
     {
-        //dump(config('database.connections.tenant_host_connection'));
-//        dump($this->connection);
-        //dump($this->database()->getConfig());
+        dump($this->database()->getConfig());
         return (bool) $this->database()->select("SELECT datname FROM pg_database WHERE datname = '$name'");
     }
 }
