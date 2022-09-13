@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Stancl\Tenancy\Database\TenantDatabaseManagers;
 
+use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Database\Contracts\TenantWithDatabase;
 
 class PostgreSQLDatabaseManager extends TenantDatabaseManager
@@ -20,8 +21,10 @@ class PostgreSQLDatabaseManager extends TenantDatabaseManager
 
     public function databaseExists(string $name): bool
     {
-        dump($this->database()->getConfig());
-
-        return (bool) $this->database()->select("SELECT datname FROM pg_database WHERE datname = '$name'");
+        //dd($this->database('pg'));
+        //$this->setConnection('tenant_host_connection');
+        $db = DB::connection('tenant_host_connection');
+        dd($db, config('database.connections.tenant_host_connection'));
+        return (bool) $this->database('pg')->select("SELECT datname FROM pg_database WHERE datname = '$name'");
     }
 }

@@ -14,12 +14,18 @@ abstract class TenantDatabaseManager implements Contract // todo better naming?
     /** The database connection to the server. */
     protected string $connection;
 
-    protected function database(): Connection
+    protected function database($from = null): Connection
     {
         if (! isset($this->connection)) {
             throw new NoConnectionSetException(static::class);
         }
 
+        if ($from == 'pg') {
+            // debug
+            ray()->count();
+            ray($this->connection);
+            ray(config('database.connections'));
+        }
         return DB::connection($this->connection);
     }
 
