@@ -85,27 +85,6 @@ test('dbs can be created when another driver is used for the central db', functi
     expect($postgresManager->databaseExists($database))->toBeTrue();
 });
 
-test('test', function (){
-    Event::listen(TenantCreated::class, JobPipeline::make([CreateDatabase::class])->send(function (TenantCreated $event) {
-        return $event->tenant;
-    })->toListener());
-
-    $database = 'db' . pest()->randomString();
-
-    $tenant1 = Tenant::create([
-        'tenancy_db_name' => $database,
-        'tenancy_db_connection' => 'mysql',
-    ]);
-
-    $database = 'db' . pest()->randomString();
-
-    $tenant2 = Tenant::create([
-        'tenancy_db_name' => $database,
-        'tenancy_db_connection' => 'pgsql',
-    ]);
-
-})->group('test');
-
 test('the tenant connection is fully removed', function () {
     config([
         'tenancy.boostrappers' => [

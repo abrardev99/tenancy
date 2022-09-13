@@ -21,10 +21,6 @@ class PostgreSQLDatabaseManager extends TenantDatabaseManager
 
     public function databaseExists(string $name): bool
     {
-        //dd($this->database('pg'));
-        //$this->setConnection('tenant_host_connection');
-        $db = DB::connection('tenant_host_connection');
-        dd($db, config('database.connections.tenant_host_connection'));
         return (bool) $this->database('pg')->select("SELECT datname FROM pg_database WHERE datname = '$name'");
     }
 }
