@@ -34,7 +34,7 @@ class InitializeTenancyByPath extends IdentificationMiddleware
     public function handle(Request $request, Closure $next)
     {
         /** @var Route $route */
-        $route = $request->route();
+        $route = $this->getRoute($request);
 
         // Only initialize tenancy if tenant is the first parameter
         // We don't want to initialize tenancy if the tenant is
@@ -55,5 +55,19 @@ class InitializeTenancyByPath extends IdentificationMiddleware
         }
 
         return $next($request);
+    }
+
+    protected function getRoute(Request $request): Route
+    {
+        /** @var Route $route */
+        $route = $request->route();
+
+        if (! $route) {
+            $route = new Route($request->method(), $request->getUri(), []);
+            $route->parameters[PathTenantResolver::$tenantParameterName] = explode('/', $request->getPathInfo())[1]; // todo@1 improve getting prefix
+            $route->parameterNames[] = PathTenantResolver::$tenantParameterName;
+        }
+
+        return $route;
     }
 }
