@@ -33,7 +33,6 @@ class InitializeTenancyByPath extends IdentificationMiddleware
 
     public function handle(Request $request, Closure $next)
     {
-        /** @var Route $route */
         $route = $this->getRoute($request);
 
         // Only initialize tenancy if tenant is the first parameter
@@ -64,7 +63,15 @@ class InitializeTenancyByPath extends IdentificationMiddleware
 
         if (! $route) {
             $route = new Route($request->method(), $request->getUri(), []);
-            $route->parameters[PathTenantResolver::$tenantParameterName] = explode('/', $request->getPathInfo())[1]; // todo@1 improve getting prefix
+            /**
+             * getPathInfo() returns the path except the root domain.
+             * The path info always starts with a /.
+             * We always fetch the first parameter because tenant parameter will always be first.
+             *
+             *  http://localhost.test/acme ==> $request->getPathInfo() ==> /acme ==> explode('/', $request->getPathInfo())[1] ==> acme
+             *  http://localhost.test/acme/foo ==> $request->getPathInfo() ==> /acme/foo ==> explode('/', $request->getPathInfo())[1] ==> acme
+             */
+            $route->parameters[PathTenantResolver::$tenantParameterName] = explode('/', $request->getPathInfo())[1];
             $route->parameterNames[] = PathTenantResolver::$tenantParameterName;
         }
 

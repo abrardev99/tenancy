@@ -36,6 +36,8 @@ test('early identification works for request path identification', function (){
     expect(tenancy()->initialized)->toBeTrue();
     expect(tenant('id'))->toBe('acme');
     expect(app(TenantGitHubManager::class)->token)->toBe('Tenant token: ' . tenant()->getTenantKey());
+    // assert that the route WITHOUT the tenant parameter matches the route WITH the tenant parameter
+    expect(route('foo'))->toBe(route('foo', ['tenant' => 'acme']));
 });
 
 test('early identification works for request data identification using request header parameter', function (){
@@ -110,11 +112,6 @@ test('early identification works for domain or subdomain identification', functi
     subdomainIdentificationTest();
 });
 
-class TenantWithDomain extends Models\Tenant
-{
-    use HasDomains;
-}
-
 function domainIdentificationTest(): void
 {
     config(['tenancy.tenant_model' => TenantWithDomain::class]);
@@ -166,4 +163,9 @@ function subdomainIdentificationTest(): void
     expect(tenancy()->initialized)->toBeTrue();
     expect(tenant('id'))->toBe($tenant->id);
     expect(app(TenantGitHubManager::class)->token)->toBe('Tenant token: ' . tenant()->getTenantKey());
+}
+
+class TenantWithDomain extends Models\Tenant
+{
+    use HasDomains;
 }
