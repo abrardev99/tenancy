@@ -6,16 +6,14 @@ declare(strict_types=1);
 // todo@1 come up with a better name
 // Purpose of this file to test `central` and `runForAll` methods with session driver set to database
 
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-use Stancl\Tenancy\Tests\Etc\Tenant as DomainTenant;
+use Stancl\Tenancy\Tests\Etc\Tenant;
 
 test('central function works when using database session driver', function (){
     config(['session.driver' => 'database']);
 
-    $tenant = DomainTenant::create();
+    $tenant = Tenant::create();
 
     $tenant->domains()->create(['domain' => 'foo.localhost']);
 
