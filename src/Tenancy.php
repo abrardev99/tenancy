@@ -128,6 +128,8 @@ class Tenancy
 
         $this->end();
 
+        dd(session()->getHandler());
+
         // This callback will usually not accept arguments, but the previous
         // Tenant is the only value that can be useful here, so we pass that.
         $result = $callback($previousTenant);

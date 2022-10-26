@@ -8,13 +8,16 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Tests\Etc\Tenant as DomainTenant;
 
 test('central function works when using database session driver', function (){
-    app(Kernel::class)->pushMiddleware(StartSession::class);
     config(['session.driver' => 'database']);
 
-    $tenant = \Stancl\Tenancy\Tests\Etc\Tenant::create();
-    tenancy()->initialize($tenant);
+    $tenant = DomainTenant::create();
+
+    $tenant->domains()->create(['domain' => 'foo.localhost']);
 
     // run for central
     pest()->artisan('migrate', [
@@ -28,12 +31,22 @@ test('central function works when using database session driver', function (){
         '--realpath' => true,
     ])->assertExitCode(0);
 
-    session(['message' => 'my message']);
 
-    tenancy()->central(function (){
-        return [];
+    Route::middleware(['web', InitializeTenancyByDomain::class])->group(function () {
+        Route::get('/central', function () {
+            session(['message' => 'my message']);
+
+             tenancy()->central(function (){
+                return 'central results';
+            });
+
+             return session('message');
+
+        });
     });
 
-    expect(session('message'))->toBe('my message');
+    pest()->get('http://foo.localhost/central')
+        ->assertOk()
+        ->assertSee('my message');
 
 })->group('current');
