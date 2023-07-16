@@ -28,8 +28,7 @@ class InitializeTenancyByPath extends IdentificationMiddleware
     /** @return \Illuminate\Http\Response|mixed */
     public function handle(Request $request, Closure $next): mixed
     {
-        /** @var Route $route */
-        $route = $request->route();
+        $route = $this->getRoute($request);
 
         // Only initialize tenancy if tenant is the first parameter
         // We don't want to initialize tenancy if the tenant is
@@ -57,5 +56,27 @@ class InitializeTenancyByPath extends IdentificationMiddleware
                 PathTenantResolver::tenantParameterName() => $tenant->getTenantKey(),
             ]);
         });
+    }
+
+    protected function getRoute(Request $request): Route
+    {
+        /** @var Route $route */
+        $route = $request->route();
+
+        if (! $route) {
+            $route = new Route($request->method(), $request->getUri(), []);
+            /**
+             * getPathInfo() returns the path except the root domain.
+             * The path info always starts with a /.
+             * We always fetch the first parameter because tenant parameter will always be first.
+             *
+             *  http://localhost.test/acme ==> $request->getPathInfo() ==> /acme ==> explode('/', $request->getPathInfo())[1] ==> acme
+             *  http://localhost.test/acme/foo ==> $request->getPathInfo() ==> /acme/foo ==> explode('/', $request->getPathInfo())[1] ==> acme
+             */
+            $route->parameters[PathTenantResolver::$tenantParameterName] = explode('/', $request->getPathInfo())[1];
+            $route->parameterNames[] = PathTenantResolver::$tenantParameterName;
+        }
+
+        return $route;
     }
 }
